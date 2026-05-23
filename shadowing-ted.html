@@ -483,10 +483,14 @@ const TALKS = [
 // STATE
 // ═══════════════════════════════════════
 let cur = null, segIdx = 0;
-let progress = {};
+let progress = JSON.parse(localStorage.getItem('tedShadowProgress') || '{}');
 let scriptOpen = false, jaOpen = false, noteOpen = false;
 let mr = null, recChunks = [], recBlob = null, recAudio = null;
 let isRec = false, analyser = null, animFr = null;
+
+function saveProgress() {
+  localStorage.setItem('tedShadowProgress', JSON.stringify(progress));
+}
 
 // ═══════════════════════════════════════
 // HOME
@@ -623,6 +627,7 @@ function markDone() {
   const next = keys.find(k => !sp[k]);
   if (!next) { toast('このセグメントは4日間完了済み ✅'); return; }
   sp[next] = true;
+  saveProgress();
   const done = keys.filter(k => sp[k]).length;
   renderDays(); renderSegBar();
   if (done >= 4) {
