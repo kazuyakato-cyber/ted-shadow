@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TED Shadow – シャドーイング練習</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0c0c12;color:#e8e4dc;font-family:'Noto Sans JP',sans-serif;min-height:100vh;-webkit-text-size-adjust:100%}
+button{border:none;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;outline:none}
+button:active{opacity:.75}
+img{display:block}
+
+/* NAV */
+.nav{background:#0d0d14;border-bottom:1px solid #1c1c2a;padding:11px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200}
+.logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#e2231a,#ff6b35);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;flex-shrink:0;letter-spacing:-.5px}
+.nav-title{font-weight:700;font-size:15px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back-btn{background:#1a1a24;color:#aaa;padding:7px 13px;border-radius:8px;font-size:12px;flex-shrink:0;border:1px solid #252530;transition:background .15s}
+.back-btn:hover{background:#222230}
+
+/* SCREENS */
+.screen{display:none;max-width:680px;margin:0 auto;padding:20px 14px 80px}
+.screen.active{display:block}
+
+/* ─── HOME ─── */
+.hero{margin-bottom:22px}
+.hero-tag{display:inline-block;background:#1a1010;border:1px solid #e2231a30;padding:3px 12px;border-radius:20px;font-size:11px;color:#ff6b35;margin-bottom:12px}
+.hero h1{font-size:24px;font-weight:700;line-height:1.3;margin-bottom:8px}
+.hero p{color:#666;font-size:13px;line-height:1.8}
+.accent{color:#ff6b35}
+
+.how{background:#111118;border:1px solid #1e1e2c;border-radius:13px;padding:14px 16px;margin-bottom:22px}
+.how-title{font-size:11px;color:#555;margin-bottom:12px;font-weight:500}
+.how-row{display:flex;gap:10px;margin-bottom:9px;align-items:flex-start}
+.how-row:last-child{margin:0}
+.how-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center;margin-top:1px}
+.how-h{font-size:13px;font-weight:500;margin-bottom:1px}
+.how-d{font-size:11px;color:#555;line-height:1.5}
+
+.section-label{font-size:11px;color:#555;margin-bottom:10px;font-weight:500}
+.talk-card{background:#111118;border:1px solid #1e1e2c;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;width:100%;text-align:left;color:#e8e4dc;margin-bottom:9px;transition:border-color .15s}
+.talk-card:hover{border-color:#ff6b3550}
+.thumb{width:84px;height:53px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#1a1a28}
+.t-title{font-size:14px;font-weight:600;margin-bottom:3px;line-height:1.4}
+.t-speaker{font-size:11px;color:#555;margin-bottom:5px}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px}
+.b-easy{background:#4ade8018;color:#4ade80}
+.b-mid{background:#fb923c18;color:#fb923c}
+.t-desc{font-size:11px;color:#555;line-height:1.6;margin-top:5px}
+
+/* ─── PLAYER ─── */
+.p-meta{margin-bottom:14px}
+.p-title{font-size:15px;font-weight:700;line-height:1.3;margin-bottom:2px}
+.p-speaker{font-size:12px;color:#555}
+
+/* YouTube */
+.yt-outer{position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:13px;overflow:hidden;margin-bottom:14px}
+.yt-outer iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+/* Segment bar */
+.seg-label{font-size:11px;color:#555;margin-bottom:7px;font-weight:500}
+.seg-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.seg-btn{flex:1;min-width:52px;padding:8px 4px;border-radius:8px;font-size:10px;font-weight:500;background:#111118;border:1px solid #1e1e2c;color:#666;text-align:center;cursor:pointer;line-height:1.4;transition:all .12s}
+.seg-btn:hover{border-color:#ff6b3540;color:#aaa}
+.seg-btn.sel{background:#ff6b3520;border-color:#ff6b35;color:#ff6b35;font-weight:700}
+.seg-btn.done4{background:#4ade8010;border-color:#4ade8040;color:#4ade80}
+
+/* Controls */
+.ctrl-row{display:flex;gap:8px;margin-bottom:12px}
+.c-btn{flex:1;padding:13px 4px;border-radius:11px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;transition:opacity .15s}
+.c-replay{background:#ff6b3520;border:1px solid #ff6b3540;color:#ff6b35}
+.c-done{background:#4ade8018;border:1px solid #4ade8035;color:#4ade80}
+
+/* Day tracker */
+.day-box{background:#111118;border:1px solid #1e1e2c;border-radius:12px;padding:13px 16px;margin-bottom:12px}
+.day-box-title{font-size:11px;color:#555;margin-bottom:10px;font-weight:500}
+.day-row{display:flex;align-items:center;gap:10px}
+.day-dots{display:flex;gap:7px}
+.day-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;border:2px solid #252530;color:#555;flex-shrink:0;transition:all .2s}
+.day-dot.done{background:#4ade8020;border-color:#4ade80;color:#4ade80}
+.day-hint{font-size:12px;color:#555;line-height:1.5;flex:1}
+
+/* ─── SCRIPT PANEL (below video) ─── */
+.script-panel{background:#111118;border:1px solid #1e1e2c;border-radius:13px;overflow:hidden;margin-bottom:12px}
+.script-toggle{width:100%;padding:13px 16px;background:none;color:#aaa;font-size:13px;font-weight:500;text-align:left;display:flex;justify-content:space-between;align-items:center;transition:background .15s}
+.script-toggle:hover{background:#16161f}
+.script-toggle-arrow{font-size:12px;color:#555;transition:transform .2s}
+.script-body{display:none;padding:0 16px 16px;border-top:1px solid #1a1a28}
+.script-body.open{display:block}
+
+/* Script seg tabs */
+.script-seg-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:12px 0 10px}
+.sst{flex:1;min-width:48px;padding:6px 3px;border-radius:7px;font-size:10px;background:#0e0e16;border:1px solid #1e1e2c;color:#555;text-align:center;cursor:pointer;transition:all .12s}
+.sst:hover{border-color:#7c5cfc40;color:#888}
+.sst.sel{background:#7c5cfc20;border-color:#7c5cfc;color:#a78bfa;font-weight:600}
+
+/* Script content */
+.sc-en{font-size:16px;line-height:1.85;color:#e8e4dc;margin-bottom:14px;font-weight:400}
+.sc-ja-toggle{width:100%;text-align:left;padding:8px 12px;background:#0e0e16;border:1px solid #1e1e2c;border-radius:8px;color:#666;font-size:12px;display:flex;justify-content:space-between;margin-bottom:0;transition:background .15s}
+.sc-ja-toggle:hover{background:#13131e}
+.sc-ja{font-size:13px;color:#777;line-height:1.8;margin-top:10px;display:none;padding:0 2px}
+.sc-ja.open{display:block}
+.sc-note{margin-top:12px;background:#0e0e16;border:1px solid #1e1e2c;border-left:3px solid #7c5cfc;border-radius:0 8px 8px 0;padding:11px 13px;font-size:12px;color:#888;line-height:1.8;display:none}
+.sc-note.open{display:block}
+.sc-note strong{color:#a78bfa}
+.sc-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #1a1a28}
+.sc-act-btn{flex:1;padding:11px;border-radius:9px;font-size:12px;font-weight:600}
+.sca-replay{background:#ff6b3520;border:1px solid #ff6b3540;color:#ff6b35}
+.sca-note{background:#7c5cfc18;border:1px solid #7c5cfc35;color:#a78bfa}
+
+/* Recording */
+.rec-box{background:#111118;border:1px solid #1e1e2c;border-radius:12px;padding:13px 16px;margin-bottom:12px}
+.rec-box-title{font-size:11px;color:#555;margin-bottom:10px;font-weight:500}
+.wave{height:44px;display:flex;gap:2px;align-items:center;margin-bottom:10px;background:#0a0a12;border-radius:8px;padding:0 10px}
+.wave-hint{font-size:12px;color:#2a2a38;margin:auto}
+.wbar{width:4px;border-radius:2px;background:#ff6b3570;transition:height .06s ease}
+.rec-btns{display:flex;gap:6px}
+.rb{flex:1;padding:10px 4px;border-radius:9px;font-size:12px;font-weight:600;text-align:center;transition:opacity .15s}
+.rb-rec{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.rb-stop{background:#1a1a26;border:1px solid #2a2a38;color:#f87171}
+.rb-play{background:#1a1a26;border:1px solid #2a2a38;color:#a78bfa}
+.rb-del{background:#1a1a26;border:1px solid #1e1e2c;color:#444;font-size:11px}
+.rec-status{font-size:11px;color:#555;margin-top:8px;text-align:center;min-height:15px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.blink{animation:blink 1s infinite}
+
+.tip-box{background:#0f1a0f;border:1px solid #1a3a1a;border-radius:10px;padding:12px 14px;font-size:12px;color:#4ade80;line-height:1.8}
+
+/* Toast */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1e1e30;border:1px solid #7c5cfc50;color:#c4b5fd;padding:10px 22px;border-radius:22px;font-size:13px;z-index:999;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .3s;box-shadow:0 4px 24px #0007}
+
+/* Setup guide */
+.setup-box{background:#111118;border:1px solid #1e1e2c;border-radius:13px;padding:18px;margin-bottom:20px}
+.setup-box h2{font-size:15px;font-weight:700;margin-bottom:14px;color:#e8e4dc}
+.setup-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.setup-step:last-child{margin:0}
+.step-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#e2231a,#ff6b35);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-body{flex:1}
+.step-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.step-desc{font-size:12px;color:#666;line-height:1.6}
+.step-code{font-family:monospace;font-size:11px;background:#0a0a10;border:1px solid #1e1e2c;border-radius:6px;padding:8px 10px;margin-top:6px;color:#a78bfa;word-break:break-all;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="logo">TED</div>
+  <div class="nav-title" id="navTitle">TED Shadow</div>
+  <button class="back-btn" id="backBtn" style="display:none" onclick="goHome()">← 戻る</button>
+</div>
+
+<!-- ═══════════ HOME ═══════════ -->
+<div class="screen active" id="homeScreen">
+  <div class="hero">
+    <div class="hero-tag">TEDシャドーイング</div>
+    <h1>本物のTEDで<br><span class="accent">英語のリズム</span>を掴む</h1>
+    <p style="margin-top:8px">約1分ごとのセグメントを4日間繰り返す。<br>スクリプト・日本語訳・録音確認がアプリ内で完結。</p>
+  </div>
+
+  <!-- セットアップガイド -->
+  <div class="setup-box">
+    <h2>🚀 セットアップガイド（初回のみ）</h2>
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">GitHubアカウントを作成</div>
+        <div class="step-desc"><a href="https://github.com" target="_blank" style="color:#ff6b35">github.com</a> でSign up（無料）</div>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">新しいリポジトリを作成</div>
+        <div class="step-desc">「New repository」→ 名前を <strong style="color:#e8e4dc">ted-shadow</strong> に設定 → 「Create repository」</div>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">このHTMLファイルをアップロード</div>
+        <div class="step-desc">「Add file」→「Upload files」→ この <strong style="color:#e8e4dc">shadowing-ted.html</strong> をドラッグ → 「Commit changes」</div>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">GitHub Pagesを有効化</div>
+        <div class="step-desc">Settings → Pages → Branch: <strong style="color:#e8e4dc">main</strong> を選択 → Save<br>数分後にURLが発行されます</div>
+        <div class="step-code">https://あなたのID.github.io/ted-shadow/shadowing-ted.html</div>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">そのURLをブラウザで開く</div>
+        <div class="step-desc">スマホのSafari/ChromeでURLを開けばYouTubeも録音も全機能使えます 🎉</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="how">
+    <div class="how-title">使い方</div>
+    <div class="how-row"><div class="how-icon">▶</div><div><div class="how-h">動画を再生してシャドーイング</div><div class="how-d">アプリ内プレイヤーで該当箇所から再生。繰り返し視聴できます。</div></div></div>
+    <div class="how-row"><div class="how-icon">📄</div><div><div class="how-h">動画の下でスクリプトを確認</div><div class="how-d">英文・日本語訳・発音のポイントを動画直下で確認。画面切り替え不要。</div></div></div>
+    <div class="how-row"><div class="how-icon">🎙</div><div><div class="how-h">録音して自己確認</div><div class="how-d">自分の声を録音して聴き直し。発音・リズムを客観的にチェック。</div></div></div>
+    <div class="how-row"><div class="how-icon">📅</div><div><div class="how-h">4日間チャレンジ</div><div class="how-d">同じセグメントを4日間続けたら次へ。確実に体に染み込ませる。</div></div></div>
+  </div>
+
+  <div class="section-label">▼ シャドーイング向けおすすめTED（5本）</div>
+  <div id="talkList"></div>
+</div>
+
+<!-- ═══════════ PLAYER ═══════════ -->
+<div class="screen" id="playerScreen">
+  <div class="p-meta">
+    <div class="p-title" id="pTitle"></div>
+    <div class="p-speaker" id="pSpeaker"></div>
+  </div>
+
+  <!-- YouTube Player -->
+  <div class="yt-outer">
+    <iframe id="ytFrame"
+      allow="autoplay; encrypted-media; fullscreen"
+      allowfullscreen
+      playsinline
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+  </div>
+
+  <!-- Segment bar -->
+  <div class="seg-label">セグメント（約1分ごと）</div>
+  <div class="seg-bar" id="segBar"></div>
+
+  <!-- Controls -->
+  <div class="ctrl-row">
+    <button class="c-btn c-replay" onclick="replaySegment()">🔁 もう一度再生</button>
+    <button class="c-btn c-done" onclick="markDone()">✓ 今日完了</button>
+  </div>
+
+  <!-- Day tracker -->
+  <div class="day-box">
+    <div class="day-box-title">4日間チャレンジ</div>
+    <div class="day-row">
+      <div class="day-dots" id="dayDots"></div>
+      <div class="day-hint" id="dayHint"></div>
+    </div>
+  </div>
+
+  <!-- ─── Script Panel (below video) ─── -->
+  <div class="script-panel">
+    <button class="script-toggle" onclick="toggleScriptPanel()">
+      <span>📄 スクリプト・日本語訳・発音メモ</span>
+      <span class="script-toggle-arrow" id="scriptArrow">▼</span>
+    </button>
+    <div class="script-body" id="scriptBody">
+      <!-- Script seg tabs -->
+      <div class="script-seg-tabs" id="scriptSegTabs"></div>
+
+      <!-- English text -->
+      <div class="sc-en" id="scEn"></div>
+
+      <!-- Japanese toggle -->
+      <button class="sc-ja-toggle" onclick="toggleJa()">
+        <span>🇯🇵 日本語訳</span>
+        <span id="jaArrow" style="font-size:11px">▼</span>
+      </button>
+      <div class="sc-ja" id="scJa"></div>
+
+      <!-- Note toggle -->
+      <div style="margin-top:8px">
+        <button class="sc-ja-toggle" onclick="toggleNote()" style="border-color:#7c5cfc30">
+          <span>🎯 発音のポイント</span>
+          <span id="noteArrow" style="font-size:11px">▼</span>
+        </button>
+        <div class="sc-note" id="scNote"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="sc-actions">
+        <button class="sc-act-btn sca-replay" onclick="replaySegment()">🔁 この箇所を再生</button>
+        <button class="sc-act-btn sca-note" onclick="toggleNote()">🎯 発音メモ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recording -->
+  <div class="rec-box">
+    <div class="rec-box-title">🎙 録音して自己確認</div>
+    <div class="wave" id="wave"><span class="wave-hint">録音ボタンを押してスタート</span></div>
+    <div class="rec-btns">
+      <button class="rb rb-rec" id="rbRec" onclick="startRec()">● 録音</button>
+      <button class="rb rb-stop" id="rbStop" onclick="stopRec()" disabled style="opacity:.4">■ 停止</button>
+      <button class="rb rb-play" id="rbPlay" onclick="playRec()" disabled style="opacity:.4">▶ 再生</button>
+      <button class="rb rb-del" onclick="clearRec()">✕ 削除</button>
+    </div>
+    <div class="rec-status" id="recStatus"></div>
+  </div>
+
+  <div class="tip-box">
+    💡 <strong>練習の流れ：</strong><br>
+    ① 動画を再生して聴く → ② スクリプトを見ながらシャドーイング → ③「🔁 もう一度再生」で繰り返す → ④ 録音して自分の声を確認 → ⑤「✓ 今日完了」を押す
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const TALKS = [
+  {
+    id:"brenebrown", ytId:"iCvmsMzlF7o",
+    title:"The Power of Vulnerability", speaker:"Brené Brown",
+    level:"easy", levelJa:"初〜中級",
+    desc:"ゆっくり明瞭な発音。感情豊かでリズム練習に最適。世界で最も視聴されたTED講演のひとつ。",
+    thumb:"https://img.youtube.com/vi/iCvmsMzlF7o/mqdefault.jpg",
+    segments:[
+      { label:"0:00〜1:00", start:0,
+        en:"So, I'll start with this: a couple years ago, an event planner called me because I was going to do a speaking event. And she'd been Googling me, and she said, \"I'm a little bit confused about your talk.\" And I said, \"What's that?\" And she said, \"Well, are you a researcher or a storyteller?\" And I said, \"Both. I'm a qualitative researcher. I collect stories; that's what I do.\"",
+        ja:"こんな話から始めましょう。数年前、イベント企画者から電話がかかってきました。Googleで私を調べたと言って、「あなたの講演について少し混乱しています。研究者ですか、ストーリーテラーですか？」と聞かれました。私は「両方です。定性的研究者で、物語を集めるのが仕事です」と答えました。",
+        note:"• <strong>\"I'll start with this\"</strong> ― 'with this' はつなげて「ウィズディス」\n• <strong>\"a couple years ago\"</strong> ― 'a couple' をひとかたまりに「ア カポル」\n• <strong>\"qualitative\"</strong> ― 「クウォリタティブ」QUALに強勢。4音節。"
+      },
+      { label:"1:00〜2:00", start:60,
+        en:"And she said, \"Well, I googled you and I'm going to need you to pick, because I was going to put you on the motivation track and then I looked you up and you study things like shame and fear and vulnerability.\" And she said, \"You know what we call that?\" And I said, \"Happiness?\" She said, \"We call that the bummer track.\"",
+        ja:"彼女は言いました。「Googleで調べたのですが、選んでいただく必要があります。モチベーション系のトラックに入れようとしていたのですが、恥や恐れ、傷つきやすさを研究されているんですね。」「それって何と呼ぶかわかりますか？」私は「幸福？」と答えました。「私たちは『気が重くなるトラック』と呼んでいます」と言いました。",
+        note:"• <strong>\"I'm going to need\"</strong> ― 「アイム ガナ ニード」going to → gonna に\n• <strong>\"the bummer track\"</strong> ― ユーモアのある言い方。笑いが来る箇所\n• shame / fear / vulnerability ― 3語を等間隔で並べるリズムを意識して"
+      },
+      { label:"2:00〜3:00", start:120,
+        en:"So I had a breakdown — which I prefer to call a spiritual awakening. And I'll tell you why. When you spend a lot of your life trying to outrun or outsmart vulnerability, what eventually happens is it finds you. And it finds you in a very painful way.",
+        ja:"それで私は精神的に崩壊しました——私は「霊的な目覚め」と呼ぶのが好きですが。その理由を話しましょう。傷つきやすさから逃げたり克服しようとして人生の多くを過ごすと、最終的にはそれが追いついてくる。そして、とても辛い形でやってくるのです。",
+        note:"• <strong>\"spiritual awakening\"</strong> ― 「スピリチュアル アウェイクニング」3+4音節\n• <strong>\"outrun or outsmart\"</strong> ― 対比的にはっきり。両語ともoutに強勢\n• ダッシュ（—）の後は少し間を置いて。会話的なリズムが大切"
+      },
+      { label:"3:00〜4:00", start:180,
+        en:"And so I called a therapist. My therapist said, \"OK.\" I said, \"Here's the thing, I'm not gonna be — I don't need this. I'm a researcher.\" My therapist said, \"Hm. How's that working for you?\" And I said, \"Fine.\" But I had — I hate crying, and I was crying.",
+        ja:"そこでセラピストに電話しました。セラピストは「はい」と言いました。私は「聞いてください、私はこんなこと——これは必要ないんです。私は研究者ですから」と言いました。「ふむ。それはどう機能していますか？」「うまくいっています」。でも私は泣いていました。泣くのが嫌いなのに。",
+        note:"• <strong>\"I'm not gonna be\"</strong> ― 「アイム ナット ガナ ビー」速く\n• <strong>\"How's that working for you?\"</strong> ― セラピスト定番フレーズ。アイロニーを込めて\n• 自嘲的なユーモアの部分。声のトーン変化に注目"
+      },
+      { label:"4:00〜5:00", start:240,
+        en:"So I thought, you know what, I'm going to start with connection. Because, by the time you're a social worker for 10 years, what you realize is that connection is why we're here. It is what gives purpose and meaning to our lives. This is what it's all about.",
+        ja:"そこで私は思いました。「繋がりから始めよう」と。なぜなら、社会福祉士として10年働くと気づくことがあります。繋がりこそが私たちがここにいる理由だということです。それが人生に目的と意味を与えるものです。",
+        note:"• <strong>\"you know what\"</strong> ― 間投詞として「ユー ノー ワット」\n• <strong>\"connection\"</strong> ― キーワード。はっきり強調して\n• <strong>\"what it's all about\"</strong> ― 「ワリッツ オール アバウト」つなげて発音"
+      },
+      { label:"5:00〜6:00", start:300,
+        en:"And so I thought, I'll just call it what the research shows it to be: Shame is the fear of disconnection. Is there something about me that, if other people know it or see it, that I won't be worthy of connection? Things I can't tell people.",
+        ja:"研究が示すものをそのまま呼ぶことにしました。恥とは、繋がりを断たれることへの恐れです。自分の中に、他の人が知ったり見たりしたら、繋がりに値しなくなるようなものがあるのだろうか？人には言えないこと。",
+        note:"• <strong>\"Shame is the fear of disconnection\"</strong> ― キーフレーズ。ゆっくり明確に\n• <strong>\"worthy of connection\"</strong> ― 「ワーズィ オブ コネクション」thの音に注意\n• 研究の定義を述べる場面。落ち着いた確信に満ちた声で"
+      },
+      { label:"6:00〜7:00", start:360,
+        en:"The thing that underpinned this was excruciating vulnerability — this idea of, in order for connection to happen, we have to allow ourselves to be seen. Really seen.",
+        ja:"これを根底で支えていたのは、耐え難いほどの傷つきやすさでした——繋がりが生まれるためには、自分自身をさらけ出さなければならないという考えです。本当の意味で、見てもらうのです。",
+        note:"• <strong>\"excruciating\"</strong> ― 「エクスクルーシエイティング」4音節、2番目に強勢\n• <strong>\"Really seen.\"</strong> ― 最後に間を置いて。この2語が感情の核心\n• ダッシュの後の「this idea of」は説明の始まり。少し遅めに"
+      },
+      { label:"7:00〜8:00", start:420,
+        en:"And so I set out to unpack it. I thought, I'm going to spend a year, I'm going to understand this. And I found that people who have a strong sense of love and belonging believe they're worthy of love and belonging. That's it. They believe they're worthy.",
+        ja:"そこでそれを解き明かそうとしました。1年かけて理解しようと思いました。そして気づいたのです。愛と所属感を強く感じる人たちは、自分が愛と所属感に値すると信じているということを。それだけです。",
+        note:"• <strong>\"set out to unpack\"</strong> ― 「解き明かす」という研究者らしい表現\n• <strong>\"That's it.\"</strong> ― 短く強く。重要な発見を宣言する場面\n• <strong>\"They believe they're worthy.\"</strong> ― 2回目はさらに確信を持って繰り返す"
+      },
+      { label:"8:00〜9:00", start:480,
+        en:"They fully embraced vulnerability. They believed that what made them vulnerable made them beautiful. They didn't talk about vulnerability being comfortable, nor did they really talk about it being excruciating.",
+        ja:"彼らは傷つきやすさを完全に受け入れていました。自分を傷つきやすくするものが自分を美しくすると信じていました。傷つきやすさが快適だとは話しませんでしたし、耐え難いとも言いませんでした。",
+        note:"• <strong>\"fully embraced\"</strong> ― 「フリー エンブレイスト」fullyをしっかり\n• <strong>\"nor did they\"</strong> ― 倒置構文。「それもしなかった」という否定の追加\n• 3文が並列構造。each文の始まりをはっきり発音しよう"
+      },
+      { label:"9:00〜10:00", start:540,
+        en:"They talked about the willingness to say 'I love you' first, the willingness to do something where there are no guarantees, the willingness to breathe through waiting for the doctor to call after your mammogram.",
+        ja:"「愛しています」と最初に言う意志、保証のないことに踏み出す意志、マンモグラフィーの後に医師からの電話を息をこらえて待つ意志について話していました。",
+        note:"• <strong>\"the willingness to\"</strong> ― 3回繰り返される。リズムを合わせて\n• <strong>\"breathe through waiting\"</strong> ― breatheは長めに「ブリーズ」\n• mammogramは具体的で感情的な例。少し遅くして重みを出す"
+      },
+      { label:"10:00〜11:00", start:600,
+        en:"This is what I have found: to let ourselves be seen, deeply seen, vulnerably seen; to love with our whole hearts, even though there's no guarantee — and that's really hard, and I can tell you as a parent, that's excruciatingly difficult.",
+        ja:"私が発見したことはこれです。自分自身を深くさらけ出すこと。保証がなくても全力で愛すること——それは本当に難しい。親として言いますが、それは耐え難いほど困難です。",
+        note:"• <strong>\"seen, deeply seen, vulnerably seen\"</strong> ― 三段階で強くなるリズム\n• <strong>\"even though there's no guarantee\"</strong> ― 「イーヴン ゾー ゼアーズ ノー ガランティー」\n• 「as a parent」で自身の経験を加える。声のトーンが少し落ちる"
+      },
+      { label:"11:00〜12:00", start:660,
+        en:"And to stop controlling and predicting. I need you to be vulnerable. I need you to let yourself be seen. Because we are the most in-debt, obese, addicted and medicated adult cohort in US history. And I think it's because we numb vulnerability.",
+        ja:"そして、コントロールや予測をやめること。傷つきやすくなってほしい。自分をさらけ出してほしい。なぜなら、私たちはアメリカ史上最も借金があり、肥満で、依存症で、薬漬けの成人世代だからです。傷つきやすさを麻痺させているからだと思います。",
+        note:"• <strong>\"in-debt, obese, addicted and medicated\"</strong> ― 4つの形容詞を等間隔に\n• <strong>\"adult cohort\"</strong> ― 「アダルト コーホート」（cohortは社会学用語）\n• <strong>\"numb vulnerability\"</strong> ― 「ナム ヴァルネラビリティ」numbは動詞で「麻痺させる」"
+      },
+    ]
+  },
+  {
+    id:"kenrobinson", ytId:"iG9CE55wbtY",
+    title:"Do Schools Kill Creativity?", speaker:"Sir Ken Robinson",
+    level:"mid", levelJa:"中級",
+    desc:"ユーモアたっぷりの英国英語。笑いのリズムと抑揚が学べる。史上最多視聴TED講演。",
+    thumb:"https://img.youtube.com/vi/iG9CE55wbtY/mqdefault.jpg",
+    segments:[
+      { label:"0:00〜1:00", start:0,
+        en:"Good morning. How are you? It's been great, hasn't it? I've been blown away by the whole thing. In fact, I'm leaving. There have been three themes running through the conference which are relevant to what I want to talk about. One is the extraordinary evidence of human creativity in all of the presentations that we've had and in all of the people here.",
+        ja:"おはようございます。みなさん、いかがですか？素晴らしかったですね。私はすっかり圧倒されています。実は、もう帰ろうかと思っているくらいです。このカンファレンスには3つのテーマが流れています。一つ目は、ここにいる全員の発表と人々の中に見られる、人間の創造性の並外れた証拠です。",
+        note:"• <strong>英国英語</strong>に注意。アメリカ英語とリズムが違います\n• <strong>\"blown away\"</strong> ― 「ブロウン アウェイ」（圧倒されたという慣用句）\n• <strong>\"In fact, I'm leaving.\"</strong> ― ユーモア。笑いが来るので少し間を置いて"
+      },
+      { label:"1:00〜2:00", start:60,
+        en:"And the other is that it's put us in a place where we have no idea what's going to happen, in terms of the future. No idea how this may play out. I have an interest in education. Actually, what I find is everybody has an interest in education. Don't you?",
+        ja:"もう一つは、未来について何が起こるか全くわからない状況に私たちが置かれているということです。どうなるかわからない。私は教育に関心があります。実際、気づいたのですが、誰もが教育に関心を持っています。そうじゃないですか？",
+        note:"• <strong>\"in terms of\"</strong> ― 「イン タームズ オブ」よく使われる表現\n• <strong>\"play out\"</strong> ― 「展開する・結果が出る」という意味\n• <strong>\"Don't you?\"</strong> ― 聴衆に問いかける。声のトーンを上げて"
+      },
+      { label:"2:00〜3:00", start:120,
+        en:"If you're at a dinner party, and you say you work in education — actually, you're not often at dinner parties, frankly, if you work in education. But if you are, and you say to whoever you're sitting next to that you work in education, you can see the blood run from their face.",
+        ja:"もしディナーパーティーに出席して、教育関係の仕事をしていると言うと——実際、教育関係の方はあまりディナーパーティーに出席しませんけどね。でも、もし出席して隣の人に教育の仕事をしていると言うと、その人の顔から血の気が引くのがわかります。",
+        note:"• <strong>\"frankly\"</strong> ― 「率直に言うと」。ユーモアを加える副詞\n• <strong>\"the blood run from their face\"</strong> ― 慣用句「顔から血の気が引く」\n• 英国式のドライユーモア。間（ま）の取り方が重要"
+      },
+      { label:"3:00〜4:00", start:180,
+        en:"My contention is that creativity now is as important in education as literacy, and we should treat it with the same status. All children start their school careers with sparkling eyes, brimming with innovation. After just a few years of schooling, many of these students have lost the joy of learning.",
+        ja:"私の主張は、創造性は今や教育において識字能力と同じくらい重要であり、同じ地位で扱われるべきだということです。すべての子供たちは、輝く目を持ち、革新への情熱にあふれて学校生活を始めます。しかし数年後、多くの生徒がその学ぶ喜びを失ってしまいます。",
+        note:"• <strong>\"My contention is\"</strong> ― 議論・主張を述べる表現\n• <strong>\"as important as literacy\"</strong> ― 比較構文。as〜asを強調\n• <strong>\"sparkling eyes, brimming with innovation\"</strong> ― 詩的な表現。ゆっくり味わって"
+      },
+      { label:"4:00〜5:00", start:240,
+        en:"Picasso once said this — he said that all children are born artists. The problem is to remain an artist as we grow up. I believe this passionately: that we don't grow into creativity, we grow out of it. Or rather, we get educated out of it.",
+        ja:"ピカソはかつてこう言いました——「すべての子供は芸術家として生まれる。問題は、成長しても芸術家であり続けることだ」と。私はこう情熱を持って信じています。私たちは創造性の中に成長するのではなく、創造性から成長してしまうのです。むしろ、創造性から教育されてしまうのです。",
+        note:"• <strong>\"Picasso once said\"</strong> ― 引用の導入。少し声のトーンを変えて\n• <strong>\"grow into\" vs \"grow out of\"</strong> ― 対比。2つを対照的に発音\n• <strong>\"Or rather\"</strong> ― 「というか、むしろ」という言い直し。ポーズを置いて"
+      },
+      { label:"5:00〜6:00", start:300,
+        en:"And my view is that mathematics and languages are at the top, and the arts are at the bottom. If you were to visit education as an alien, and say, 'What's it for, public education?' I think you'd have to conclude — if you look at the output — that the whole purpose of public education throughout the world is to produce university professors.",
+        ja:"私の見方では、数学と言語が最上位に置かれ、芸術が最下位に置かれています。もし宇宙人として教育を訪問して「公教育の目的は何か？」と尋ねたとしたら——アウトプットを見る限り——世界中の公教育の目的は大学教授を生産することだと結論づけざるを得ないと思います。",
+        note:"• <strong>\"If you were to visit\"</strong> ― 仮定法。「もし〜するとしたら」\n• <strong>\"as an alien\"</strong> ― ユーモアのある例え。少し面白おかしく\n• <strong>\"produce university professors\"</strong> ― 皮肉を込めて。終わりに笑いが来る"
+      },
+    ]
+  },
+  {
+    id:"julian", ytId:"eIho2S0ZahI",
+    title:"How to Speak So That People Want to Listen", speaker:"Julian Treasure",
+    level:"easy", levelJa:"初〜中級",
+    desc:"発音が明瞭で模範的。声・リズム・強調の使い方が直接学べる。",
+    thumb:"https://img.youtube.com/vi/eIho2S0ZahI/mqdefault.jpg",
+    segments:[
+      { label:"0:00〜1:00", start:0,
+        en:"The human voice: It's the instrument we all play. It's the most powerful sound in the world, probably. It's the only one that can start a war or say 'I love you.' And yet many people have the experience that when they speak, people don't listen to them. And why is that?",
+        ja:"人間の声。それは私たちが皆演奏する楽器です。おそらく、世界で最も力強い音です。戦争を起こすことも「愛している」と言うこともできる唯一のものです。それにもかかわらず、多くの人が「話しても聞いてもらえない」という経験をします。なぜでしょうか？",
+        note:"• <strong>\"It's the instrument we all play\"</strong> ― metaphorの導入。ゆっくり、劇的に\n• <strong>\"probably\"</strong> ― 付け加えるような言い方。少し軽く\n• <strong>\"And yet\"</strong> ― 逆接。前の文との対比を意識して"
+      },
+      { label:"1:00〜2:00", start:60,
+        en:"How many people here regularly record themselves speaking? Very few. And yet we have amazing equipment. We're all carrying a recording device in our pockets. I urge you to record yourself speaking for about five minutes, then listen back to it, and I guarantee you'll learn a huge amount.",
+        ja:"ここで定期的に自分が話しているのを録音する人はどれくらいいますか？ほとんどいないでしょう。それなのに、素晴らしい機器を持っています。みんなポケットに録音機器を持ち歩いています。約5分間自分が話しているのを録音して聴き直してみてください。きっと多くのことを学べます。",
+        note:"• <strong>\"Very few.\"</strong> ― 短く確信を持って。間を置いてから\n• <strong>\"I urge you to\"</strong> ― 強い勧め。urgentlyな声で\n• <strong>\"I guarantee\"</strong> ― 「アイ ガランティー」自信を持った断言"
+      },
+      { label:"2:00〜3:00", start:120,
+        en:"And I'm going to talk about what I believe are the habits that we need to move away from. There are seven deadly sins of speaking. I'm not going to talk about all of them. Gossip, judging, negativity, complaining, excuses, lying, and dogmatism.",
+        ja:"私たちが遠ざかるべき習慣について話したいと思います。話し方の7つの大罪があります。すべてについて話すわけではありません。ゴシップ、批判、否定性、不満、言い訳、嘘、そして教条主義です。",
+        note:"• <strong>\"seven deadly sins\"</strong> ― キャッチーなフレーズ。はっきりと\n• 7つのリストは、それぞれを区切って発音\n• <strong>\"dogmatism\"</strong> ― 「ドグマティズム」（独断論）最後の言葉を強調"
+      },
+      { label:"3:00〜4:00", start:180,
+        en:"So, let's talk about what we can do — positive things. Four things, I call them HAIL. H — Honesty, being true in what you say, being straight and clear. A — Authenticity, just be yourself. I — Integrity, be your word, do what you say. L — Love, wishing people well.",
+        ja:"では私たちにできること——ポジティブなことについて話しましょう。4つのことがあり、私はそれをHAILと呼びます。H——誠実さ。A——本物であること。I——誠実さ、言葉を守ること。L——愛、人々の幸せを願うこと。",
+        note:"• <strong>HAIL</strong> ― 頭文字語。各文字を明確に発音\n• 各要素の後に少し間を置いて、聴衆に考える時間を与える\n• <strong>\"wishing people well\"</strong> ― やさしく、温かく発音"
+      },
+      { label:"4:00〜5:00", start:240,
+        en:"Register — move down to create depth and authority. Timbre — the way your voice feels. People prefer rich, smooth and warm. Prosody — this is the key skill. Don't speak in a monotone. Pace — I can get very fast to indicate excitement, or I can slow right down to emphasize.",
+        ja:"音域——深みと権威を出すために低くする。音質——声の感触。人々はリッチで滑らかで暖かい声を好みます。韻律——これが重要なスキルです。単調に話してはいけない。ペース——興奮を示すために非常に速くなることも、強調するために完全に遅くすることもできます。",
+        note:"• <strong>\"monotone\"</strong> ― あえて単調に言うことも。実演部分\n• <strong>\"I can slow right down\"</strong> ― 実際にここで声を遅くする\n• Treasureは自分の声で実演する。声のトーンや速度の変化に特に注目"
+      },
+    ]
+  },
+  {
+    id:"amycuddy", ytId:"Ks-_Mh1QhMc",
+    title:"Your Body Language May Shape Who You Are", speaker:"Amy Cuddy",
+    level:"easy", levelJa:"初〜中級",
+    desc:"落ち着いたペースのアメリカ英語。ストーリー中心で聴きやすい。",
+    thumb:"https://img.youtube.com/vi/Ks-_Mh1QhMc/mqdefault.jpg",
+    segments:[
+      { label:"0:00〜1:00", start:0,
+        en:"So I want to start by offering you a free no-tech life hack, and all it requires of you is this: that you change your posture for two minutes. But before I give it away, I want to ask you to do something for me. I want you to pay attention to what you're doing right now with your body.",
+        ja:"まず、無料のローテクなライフハックを提案したいと思います。あなたに必要なのはただこれだけです。2分間姿勢を変えること。でも、その前に、お願いがあります。今、あなたが体で何をしているか注意を払ってほしいのです。",
+        note:"• <strong>\"no-tech life hack\"</strong> ― 現代的な表現。カジュアルに\n• <strong>\"give it away\"</strong> ― 「先に教えてしまう」という意味の慣用句\n• <strong>\"right now\"</strong> ― 強調。今この瞬間を指している"
+      },
+      { label:"1:00〜2:00", start:60,
+        en:"So we know that our nonverbals govern how other people think and feel about us. But our question really was, do our nonverbals govern how we think and feel about ourselves? There's some evidence that they do. So the question for us was, can you fake it till you make it?",
+        ja:"私たちのノンバーバルが他の人が私たちについてどう思うかを支配することはわかっています。しかし、私たちの本当の疑問は、ノンバーバルが私たち自身についてどう思うかも支配するのかということです。その証拠がいくつかあります。「成功するまで成功したふりができるか」。",
+        note:"• <strong>\"nonverbals\"</strong> ― 非言語コミュニケーション。研究用語\n• <strong>\"fake it till you make it\"</strong> ― よく知られた英語の格言。リズムよく\n• 疑問文と断言文を交互に使う構造に注目"
+      },
+      { label:"2:00〜3:00", start:120,
+        en:"And so I want to give a moment to the other people in this room who may be feeling like impostors. Fake it. Don't fake it till you make it. Fake it till you become it. Do it enough until you actually become it and you internalize.",
+        ja:"インポスター（詐欺師）のように感じている方々のために時間を取りたいと思います。フェイクしなさい。成功するまでフェイクするのではありません。それ自体になるまでフェイクしなさい。本当にそれになって内面化するまで続けなさい。",
+        note:"• <strong>\"impostors\"</strong> ― インポスター症候群。自分の成功が偽物だと感じる心理\n• <strong>\"Fake it till you become it\"</strong> ― 元のフレーズを変化させた重要な主張\n• <strong>\"internalize\"</strong> ― 「インターナライズ」（内面化する）"
+      },
+      { label:"3:00〜4:00", start:180,
+        en:"The last thing I'm going to leave you with is this. Tiny tweaks can lead to big changes. Configure your brain to cope the best in the most stressful situations. And when you leave here today, I want you to go to a bathroom stall and stand in a power pose for two minutes.",
+        ja:"最後にお伝えしたいことはこれです。小さな微調整が大きな変化につながることがあります。最もストレスの多い状況で最善に対処できるよう脳を設定しましょう。今日ここを去る時、トイレの個室に行って2分間パワーポーズをとってほしいのです。",
+        note:"• <strong>\"Tiny tweaks\"</strong> ― 「タイニー トウィークス」頭韻（t音の繰り返し）\n• <strong>\"Configure your brain\"</strong> ― コンピューター用語を脳に使う比喩\n• <strong>\"bathroom stall\"</strong> ― トイレの個室。実践的なアドバイスで笑いを誘う"
+      },
+    ]
+  },
+  {
+    id:"lydia", ytId:"8S0FDjFBj8o",
+    title:"The Secrets of Learning a New Language", speaker:"Lýdia Machová",
+    level:"easy", levelJa:"初級",
+    desc:"非ネイティブの明瞭でゆっくりな英語。発音が聞き取りやすく初心者に最適。",
+    thumb:"https://img.youtube.com/vi/8S0FDjFBj8o/mqdefault.jpg",
+    segments:[
+      { label:"0:00〜1:00", start:0,
+        en:"Can I speak 9 languages? No, definitely not. I can have a meaningful conversation in 9 languages, and I can speak 4 of them fluently. But what I want to talk about today is not that I'm some kind of language genius. What I want to say is that it's not about genius — it's about method.",
+        ja:"私は9つの言語を話せますか？いいえ、絶対に違います。9つの言語で意味のある会話ができ、そのうち4つを流暢に話せます。しかし今日お話ししたいのは、私が言語の天才だということではありません。天才かどうかではなく、方法の問題だということです。",
+        note:"• <strong>\"definitely not\"</strong> ― 「デフィニトリー ナット」強い否定\n• <strong>\"meaningful conversation\"</strong> ― 「ミーニングフル コンバセイション」\n• スロバキア人のMachováの英語は明瞭で学習者にとって聞きやすい"
+      },
+      { label:"1:00〜2:00", start:60,
+        en:"Many language learners are using methods that are not very effective. They spend a lot of time, but they don't get the results they want. The most common method is: they go to class, study hard, do their homework — and yet they don't become fluent.",
+        ja:"多くの語学学習者は、あまり効果的でない方法を使っています。多くの時間を費やしますが、望む結果が得られません。最もよくある方法は、授業に行き、一生懸命勉強し、宿題をこなすというものです——それでも流暢にはなれません。",
+        note:"• <strong>\"effective\"</strong> ― 「エフェクティブ」（効果的）\n• <strong>\"And yet\"</strong> ― 強い逆接。期待と現実のギャップを示す\n• 3つの動詞（go, study, do）を並べるリズムを意識して"
+      },
+      { label:"2:00〜3:00", start:120,
+        en:"What I discovered is that successful language learners have a few things in common. First of all, they love the language. They find it enjoyable. They use it as a gateway to a culture, to music, to films that they love.",
+        ja:"言語習得に成功する学習者には共通点があります。まず第一に、彼らはその言語を愛しています。楽しいと感じています。文化への入り口として、愛する音楽や映画への入り口として使っています。",
+        note:"• <strong>\"First of all\"</strong> ― 「ファースト オブ オール」リストを始める表現\n• <strong>\"gateway to\"</strong> ― 「ゲートウェイ トゥ」（〜への入り口）比喩的表現\n• 「culture, music, films」を等間隔に並べるリズム"
+      },
+      { label:"3:00〜4:00", start:180,
+        en:"The most important thing I discovered is that successful language learners take responsibility for their own learning. They don't wait for a teacher to teach them. They create their own environment where they use the language every day.",
+        ja:"最も重要なのは、言語習得に成功する学習者は自分の学習に責任を持つということです。教師が教えてくれるのを待ちません。毎日その言語を使える自分自身の環境を作り出します。",
+        note:"• <strong>\"take responsibility for\"</strong> ― 重要なフレーズ。はっきりと\n• <strong>\"They don't wait for\"</strong> ― waitにストレスを置いて\n• <strong>\"their own environment\"</strong> ― ownを強調。主体性を示す"
+      },
+      { label:"4:00〜5:00", start:240,
+        en:"So, what's the best method? The best method is the one that you enjoy enough to follow through. If you hate flashcards, don't use flashcards. If you love watching videos, watch videos. The key is to be consistent and to have fun while learning.",
+        ja:"では、最良の方法は何でしょうか？最良の方法とは、継続できるくらい楽しめる方法です。フラッシュカードが嫌いなら使わないでください。動画を見るのが好きなら動画を見てください。鍵は一貫性を保ち、学びながら楽しむことです。",
+        note:"• <strong>\"follow through\"</strong> ― 「フォロー スルー」最後までやり通す\n• <strong>\"consistent\"</strong> ― 「コンシスタント」重要なキーワード\n• If〜then構文が2回繰り返される。リズムよく"
+      },
+    ]
+  }
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let cur = null, segIdx = 0;
+let progress = {};
+let scriptOpen = false, jaOpen = false, noteOpen = false;
+let mr = null, recChunks = [], recBlob = null, recAudio = null;
+let isRec = false, analyser = null, animFr = null;
+
+// ═══════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════
+function renderHome() {
+  document.getElementById('talkList').innerHTML = TALKS.map(t => `
+    <button class="talk-card" onclick="openTalk('${t.id}')">
+      <img class="thumb" src="${t.thumb}" alt=""
+        onerror="this.style.background='#1a1a28';this.src=''">
+      <div style="flex:1;min-width:0">
+        <div class="t-title">${t.title}</div>
+        <div class="t-speaker">${t.speaker}</div>
+        <span class="badge ${t.level==='easy'?'b-easy':'b-mid'}">${t.levelJa}</span>
+        <div class="t-desc">${t.desc}</div>
+      </div>
+    </button>`).join('');
+}
+
+function goHome() {
+  stopAllRec();
+  cur = null; segIdx = 0;
+  document.getElementById('navTitle').textContent = 'TED Shadow';
+  document.getElementById('backBtn').style.display = 'none';
+  document.getElementById('ytFrame').src = '';
+  showScreen('homeScreen');
+}
+
+// ═══════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════
+function showScreen(id) {
+  ['homeScreen','playerScreen'].forEach(s =>
+    document.getElementById(s).classList.toggle('active', s === id));
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════
+// OPEN TALK
+// ═══════════════════════════════════════
+function openTalk(id) {
+  cur = TALKS.find(t => t.id === id);
+  if (!cur) return;
+  segIdx = 0;
+  document.getElementById('navTitle').textContent = cur.title;
+  document.getElementById('backBtn').style.display = 'block';
+  document.getElementById('pTitle').textContent = cur.title;
+  document.getElementById('pSpeaker').textContent = cur.speaker;
+
+  // reset script panel
+  scriptOpen = false; jaOpen = false; noteOpen = false;
+  document.getElementById('scriptBody').classList.remove('open');
+  document.getElementById('scriptArrow').textContent = '▼';
+  document.getElementById('scJa').classList.remove('open');
+  document.getElementById('scNote').classList.remove('open');
+
+  renderSegBar();
+  renderScriptSegTabs();
+  renderScriptContent();
+  renderDays();
+  embedYT();
+  clearRec();
+  showScreen('playerScreen');
+}
+
+// ═══════════════════════════════════════
+// YOUTUBE
+// ═══════════════════════════════════════
+function embedYT() {
+  const seg = cur.segments[segIdx];
+  document.getElementById('ytFrame').src =
+    `https://www.youtube.com/embed/${cur.ytId}?start=${seg.start}&rel=0&playsinline=1&modestbranding=1`;
+}
+
+function replaySegment() {
+  const f = document.getElementById('ytFrame');
+  const s = f.src;
+  f.src = '';
+  setTimeout(() => { f.src = s; }, 60);
+}
+
+// ═══════════════════════════════════════
+// SEGMENT BAR
+// ═══════════════════════════════════════
+function renderSegBar() {
+  const prog = progress[cur.id] || {};
+  document.getElementById('segBar').innerHTML = cur.segments.map((s, i) => {
+    const sp = prog[i] || {};
+    const done = ['d1','d2','d3','d4'].filter(d => sp[d]).length;
+    const cls = 'seg-btn' + (i===segIdx?' sel':'') + (done>=4&&i!==segIdx?' done4':'');
+    const stars = done > 0 ? '<br>' + '★'.repeat(done) : '';
+    return `<button class="${cls}" onclick="selectSeg(${i})">${s.label}${stars}</button>`;
+  }).join('');
+}
+
+function selectSeg(i) {
+  segIdx = i;
+  renderSegBar();
+  renderScriptSegTabs();
+  renderScriptContent();
+  renderDays();
+  embedYT();
+  // reset sub-toggles
+  jaOpen = false; noteOpen = false;
+  document.getElementById('scJa').classList.remove('open');
+  document.getElementById('scNote').classList.remove('open');
+  document.getElementById('jaArrow').textContent = '▼';
+  document.getElementById('noteArrow').textContent = '▼';
+}
+
+// ═══════════════════════════════════════
+// DAY TRACKER
+// ═══════════════════════════════════════
+function renderDays() {
+  if (!progress[cur.id]) progress[cur.id] = {};
+  if (!progress[cur.id][segIdx]) progress[cur.id][segIdx] = {};
+  const sp = progress[cur.id][segIdx];
+  const done = ['d1','d2','d3','d4'].filter(d => sp[d]).length;
+
+  document.getElementById('dayDots').innerHTML =
+    ['d1','d2','d3','d4'].map((d, i) =>
+      `<div class="day-dot${sp[d]?' done':''}">${sp[d]?'✓':'D'+(i+1)}</div>`
+    ).join('');
+
+  document.getElementById('dayHint').textContent =
+    done === 0 ? 'シャドーイングして「✓ 今日完了」を押そう' :
+    done < 4   ? `あと${4-done}日で完了！` : '✅ 完了！次のセグメントへ';
+}
+
+function markDone() {
+  if (!progress[cur.id]) progress[cur.id] = {};
+  if (!progress[cur.id][segIdx]) progress[cur.id][segIdx] = {};
+  const sp = progress[cur.id][segIdx];
+  const keys = ['d1','d2','d3','d4'];
+  const next = keys.find(k => !sp[k]);
+  if (!next) { toast('このセグメントは4日間完了済み ✅'); return; }
+  sp[next] = true;
+  const done = keys.filter(k => sp[k]).length;
+  renderDays(); renderSegBar();
+  if (done >= 4) {
+    toast('🎉 4日間達成！次のセグメントへ進もう！');
+    if (segIdx + 1 < cur.segments.length)
+      setTimeout(() => selectSeg(segIdx + 1), 800);
+  } else {
+    toast(`Day ${done} 完了！ あと${4-done}日続けよう 💪`);
+  }
+}
+
+// ═══════════════════════════════════════
+// SCRIPT PANEL
+// ═══════════════════════════════════════
+function toggleScriptPanel() {
+  scriptOpen = !scriptOpen;
+  document.getElementById('scriptBody').classList.toggle('open', scriptOpen);
+  document.getElementById('scriptArrow').textContent = scriptOpen ? '▲' : '▼';
+}
+
+function renderScriptSegTabs() {
+  document.getElementById('scriptSegTabs').innerHTML = cur.segments.map((s, i) =>
+    `<button class="sst${i===segIdx?' sel':''}" onclick="selectSeg(${i})">${s.label}</button>`
+  ).join('');
+}
+
+function renderScriptContent() {
+  const seg = cur.segments[segIdx];
+  document.getElementById('scEn').textContent = seg.en;
+  document.getElementById('scJa').textContent = seg.ja;
+  document.getElementById('scNote').innerHTML = seg.note.replace(/\n/g, '<br>');
+}
+
+function toggleJa() {
+  jaOpen = !jaOpen;
+  document.getElementById('scJa').classList.toggle('open', jaOpen);
+  document.getElementById('jaArrow').textContent = jaOpen ? '▲' : '▼';
+}
+
+function toggleNote() {
+  noteOpen = !noteOpen;
+  document.getElementById('scNote').classList.toggle('open', noteOpen);
+  document.getElementById('noteArrow').textContent = noteOpen ? '▲' : '▼';
+  if (noteOpen && !scriptOpen) {
+    scriptOpen = true;
+    document.getElementById('scriptBody').classList.add('open');
+    document.getElementById('scriptArrow').textContent = '▲';
+  }
+}
+
+// ═══════════════════════════════════════
+// RECORDING
+// ═══════════════════════════════════════
+async function startRec() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = ctx.createMediaStreamSource(stream);
+      const an = ctx.createAnalyser(); an.fftSize = 64;
+      src.connect(an); analyser = an;
+      drawWave();
+    } catch(e) {}
+    recChunks = [];
+    mr = new MediaRecorder(stream);
+    mr.ondataavailable = e => recChunks.push(e.data);
+    mr.onstop = () => {
+      recBlob = new Blob(recChunks, { type: 'audio/webm' });
+      stream.getTracks().forEach(t => t.stop());
+      stopWave();
+      setBtn('rbPlay', false);
+      document.getElementById('recStatus').textContent = '録音完了 ▶ 再生ボタンで確認できます';
+    };
+    mr.start(); isRec = true;
+    setBtn('rbRec', true); setBtn('rbStop', false);
+    document.getElementById('recStatus').innerHTML =
+      '<span class="blink" style="color:#f87171">● 録音中...</span>';
+  } catch(e) {
+    document.getElementById('recStatus').textContent = '⚠ マイクのアクセスを許可してください';
+  }
+}
+
+function stopRec() {
+  if (mr && isRec) {
+    try { mr.stop(); } catch(e) {}
+    isRec = false;
+    setBtn('rbRec', false); setBtn('rbStop', true);
+  }
+}
+
+function playRec() {
+  if (!recBlob) return;
+  if (recAudio) { recAudio.pause(); recAudio = null; }
+  recAudio = new Audio(URL.createObjectURL(recBlob));
+  recAudio.play();
+  document.getElementById('recStatus').textContent = '▶ 再生中...';
+  recAudio.onended = () => {
+    document.getElementById('recStatus').textContent = '再生完了';
+  };
+}
+
+function clearRec() {
+  stopRec(); recBlob = null; recChunks = [];
+  if (recAudio) { recAudio.pause(); recAudio = null; }
+  stopWave();
+  setBtn('rbRec', false); setBtn('rbStop', true); setBtn('rbPlay', true);
+  document.getElementById('recStatus').textContent = '';
+  document.getElementById('wave').innerHTML =
+    '<span class="wave-hint">録音ボタンを押してスタート</span>';
+}
+
+function stopAllRec() { stopRec(); stopWave(); }
+
+function setBtn(id, disabled) {
+  const el = document.getElementById(id);
+  el.disabled = disabled;
+  el.style.opacity = disabled ? '.4' : '1';
+}
+
+function drawWave() {
+  const wv = document.getElementById('wave');
+  wv.innerHTML = '';
+  const N = 28, bars = [];
+  for (let i = 0; i < N; i++) {
+    const b = document.createElement('div');
+    b.className = 'wbar'; b.style.height = '4px';
+    wv.appendChild(b); bars.push(b);
+  }
+  (function tick() {
+    if (!analyser) return;
+    const d = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(d);
+    bars.forEach((b, i) => {
+      b.style.height = Math.max(4, d[Math.floor(i/N*d.length)] / 255 * 38) + 'px';
+    });
+    animFr = requestAnimationFrame(tick);
+  })();
+}
+
+function stopWave() {
+  cancelAnimationFrame(animFr); analyser = null;
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+renderHome();
+</script>
+</body>
+</html>
